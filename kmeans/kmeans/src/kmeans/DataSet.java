@@ -35,6 +35,7 @@ public class DataSet {
     public DataSet() {
     }
 
+    @SuppressWarnings("unchecked")
     public boolean InitializeDataSet(String fileName, char delim, int[] index, String[] colNames) {
         assert (index.length > 0);
 
@@ -56,7 +57,7 @@ public class DataSet {
                 if (string == null) {
                     break;
                 }
-                Object oArray[] = new Object[dimensions];
+                
                 StringTokenizer stok = new StringTokenizer(string);
                 int counter = 0;
                 while (stok.hasMoreElements()) {
@@ -65,10 +66,12 @@ public class DataSet {
                     boolean exists = false;
                     for(int i : indexes){
                         exists = (counter == i)?true:false;
+                        if(exists){
+                            points.AppendPoint((Number)o, colNames[counter]);
+                            break;
+                        }    
                     }
-                    if(exists){
-                        points.AppendPoint(o, colNames[counter]);
-                    }
+                    
                     ++counter;
                 }
                 dataset.add(points);

@@ -11,7 +11,7 @@ package kmeans;
 
 /**
  *
- * @author Administrator
+ * @author cgrant
  */
 public class Main {
 
