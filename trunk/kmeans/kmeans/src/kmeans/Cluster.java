@@ -18,12 +18,27 @@ import java.util.Vector;
 public class Cluster {
     
     private Points centroid;
-    private Vector<Integer>points;
+    /** These are indexes to the points with belong to this cluster */
+    private Vector<Integer>dataPoints;
 
+    public Cluster(){
+        initialize();
+    }
+    private void initialize(){
+        centroid = null;
+        dataPoints = new Vector<Integer>();
+    }
     
-    
-    
-    
+    public void defineCentroid(Points c){
+        setCentroid(c);
+    }
+    public int ClusterSize(){
+        return dataPoints.size();
+    }
+    public boolean addPoint(int index){
+        return dataPoints.add(index);
+    }
+    /**/
     
     /* Getter Setters *****************************/
     public Points getCentroid() {
@@ -35,11 +50,11 @@ public class Cluster {
     }
 
     public Vector<Integer> getPoints() {
-        return points;
+        return dataPoints;
     }
 
     public void setPoints(Vector<Integer> points) {
-        this.points = points;
+        this.dataPoints = points;
     }
     
     
