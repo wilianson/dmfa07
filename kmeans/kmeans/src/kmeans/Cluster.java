@@ -24,6 +24,12 @@ public class Cluster {
     public Cluster(){
         initialize();
     }
+
+    public Cluster(Points centroid) {
+        initialize();
+        setCentroid(centroid);
+    }
+
     private void initialize(){
         centroid = null;
         dataPoints = new Vector<Integer>();

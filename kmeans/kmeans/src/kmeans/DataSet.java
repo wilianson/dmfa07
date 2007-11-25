@@ -16,6 +16,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -25,18 +27,22 @@ import java.util.logging.Logger;
  *
  * @author cgrant
  */
-public class DataSet {
+public class DataSet implements Iterable<Points>, Iterator<Points>{
 
     private Vector<Points> dataset;
     private int dimensions;
     private int[] indexes;
     String[] header;
-
+    
     public DataSet() {
+        initialize();
+    }
+    private void initialize(){
+        dataset = new Vector<Points>(179);
     }
 
     @SuppressWarnings("unchecked")
-    public boolean InitializeDataSet(String fileName, char delim, int[] index, String[] colNames) {
+    public synchronized boolean InitializeDataSet(String fileName, char delim, int[] index, String[] colNames) {
         assert (index.length > 0);
 
         setDimensions(index.length);
@@ -57,21 +63,31 @@ public class DataSet {
                 if (string == null) {
                     break;
                 }
-                
-                StringTokenizer stok = new StringTokenizer(string);
+
+                StringTokenizer stok = new StringTokenizer(string, delim + "");
+
                 int counter = 0;
                 while (stok.hasMoreElements()) {
                     Object o = stok.nextElement();
-                    
-                    boolean exists = false;
-                    for(int i : indexes){
-                        exists = (counter == i)?true:false;
-                        if(exists){
-                            points.AppendPoint((Number)o, colNames[counter]);
-                            break;
-                        }    
+                    Double d = 0.0;
+                    try {
+                        d = new Double((String) o);
+                    } catch (java.lang.NumberFormatException nfe) {
+                        ++counter;
+                        continue;
                     }
-                    
+
+                    boolean exists = false;
+                    for (int i : indexes) {
+                        exists = (counter == i) ? true : false;
+                        if (exists) {
+                            String nam = colNames[counter];
+                            Number num = d;
+                            points.AppendPoint(d, nam);
+                            break;
+                        }
+                    }
+
                     ++counter;
                 }
                 dataset.add(points);
@@ -93,7 +109,14 @@ public class DataSet {
         return successful;
     }
     
+    public int GetSize(){
+        return dataset.size();
+    }
     
+    public Points GetPointsByIndex(int i){
+        return dataset.get(i);
+    }
+    /** Getters and Setters **********************************************/
     public Vector<Points> getDataset() {
         return dataset;
     }
@@ -124,4 +147,45 @@ public class DataSet {
         this.indexes = new int[indexes.length];
         System.arraycopy(indexes, 0, this.indexes, 0, indexes.length);
     }
+
+    /* Iterator Stuff ******************************************************/
+    private int iteratorCounter;
+    private boolean nextCalled;
+    private boolean moreObjects;
+    public Iterator<Points> iterator() {
+        iteratorCounter = 0;
+        nextCalled = true;
+        return this;
+    }    
+
+    public boolean hasNext() {
+        if (nextCalled || (iteratorCounter == 0)) {
+            moreObjects = (iteratorCounter < dimensions) ? true : false;
+            nextCalled = false;
+        }
+        return moreObjects;
+    }
+
+    public Points next() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        Points value = dataset.get(iteratorCounter++);
+        nextCalled = true;
+        return value;
+    }
+
+    public void remove() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getCurrentIndex() {
+        return (iteratorCounter==0)?0:iteratorCounter-1;
+    }
+    
+    public Points getCurrentPoints(){
+        Points value = dataset.get(iteratorCounter);
+        return value;
+    }
+    
 }

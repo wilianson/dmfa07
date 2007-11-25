@@ -20,7 +20,7 @@ public class Points<T extends Number> {
     /** Points to the current element **/
     private int pointer;
     private int dimension;
-    Vector<T> values;
+    private Vector<T> values;
     String[] names;
 
     Points(int dimension) {
@@ -36,23 +36,118 @@ public class Points<T extends Number> {
         pointer = 0;
     }
 
-    /**
-     * @returns false if unsucessfull
-     */
     public boolean AppendPoint(T o, String name) {
 
-        if (pointer >= dimension) {
-            return false;
-        } else if (pointer < 0) {
-            return false;
-        } else {
-            values.set(pointer, o);
-            names[pointer] = name;
-            ++pointer;
-            return true;
-        }
+        assert (pointer > 0 && pointer < 0);
+
+        values.add(pointer, o);
+        names[pointer] = name;
+        ++pointer;
+        return true;
     }
 
+    public boolean equals(Points p){
+        for(int i=0;i<values.size();++i){
+            if(!values.get(i).equals(p.values.get(i)))
+                return false;
+        }
+            
+        return true;
+    }
+
+    @SuppressWarnings(value = "unchecked")
+    public Points subtract(Points<T> p) {
+        if (dimension != p.dimension) {
+            throw new NumberFormatException("Dimensions must be equal");
+        }
+        Points returnP = new Points(dimension);
+
+        for (int i = 0; i < dimension; ++i) {
+
+            double d1 = values.get(i).doubleValue();
+            double d2 = p.values.get(i).doubleValue(); //.doubleValue();
+            returnP.AppendPoint((Number) (d1 - d2), names[i]);
+        }
+
+
+        return returnP;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Points add(Points<T> p) {
+        if (dimension != p.dimension) {
+            throw new NumberFormatException("Dimensions must be equal");
+        }
+        Points returnP = new Points(dimension);
+
+        for (int i = 0; i < dimension; ++i) {
+            double d1 = values.get(i).doubleValue();
+            double d2 = p.values.get(i).doubleValue(); //.doubleValue();
+            returnP.AppendPoint((Number) (d1 + d2), names[i]);
+        }
+        return returnP;
+    }
+
+    @SuppressWarnings(value = "unchecked")
+    public Points power(int dim) {
+        Points p = new Points(dimension);
+
+        for (int i = 0; i < dimension; ++i) {
+            double d = values.get(i).doubleValue();
+
+            p.AppendPoint((Number) Math.pow( d, dim*1.0), names[i]);
+        }
+
+        return p;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Points multiply(Points<T> p) {
+        if (dimension != p.dimension) {
+            throw new NumberFormatException("Dimensions must be equal");
+        }
+        Points returnP = new Points(dimension);
+
+        for (int i = 0; i < dimension; ++i) {
+            double d1 = values.get(i).doubleValue();
+            double d2 = p.values.get(i).doubleValue(); //.doubleValue();
+            returnP.AppendPoint((Number) (d1 * d2), names[i]);
+        }
+        return returnP;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Points multiply(final Double d) {
+        Points returnP = new Points(dimension);
+
+        for (int i = 0; i < dimension; ++i) {
+            double d1 = values.get(i).doubleValue();
+            double d2 = d.doubleValue(); //.doubleValue();
+            returnP.AppendPoint((Number) (d1 * d2), names[i]);
+        }
+        return returnP;
+    }
+
+    public double sum() {
+        double dRet = 0.0;
+        for (Number d : values) {
+            dRet += (Double) d;
+        }
+        return dRet;
+    }
+    
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<dimension; ++i){
+            sb.append('[');
+            sb.append(names[i]);
+            sb.append(':');
+            sb.append(values.get(i));
+            sb.append(']');
+        }
+        return sb.toString();
+    }
+    /* Getters and Setters *****************************************/
     public int getDimension() {
         return dimension;
     }
@@ -79,44 +174,5 @@ public class Points<T extends Number> {
 //        this.header = header;
         values = new Vector<T>(values.size());
         System.arraycopy(values, 0, this.values, 0, values.size());
-    }
-
-    @SuppressWarnings(value = "unchecked")
-    public Points subtract(Points<T> p) {
-        if (dimension != p.dimension) {
-            throw new NumberFormatException("Dimensions must be equal");
-        }
-        Points returnP = new Points(dimension);
-
-        for (int i = 0; i < dimension; ++i) {
-
-            double d1 = values.get(i).doubleValue();
-            double d2 = p.values.get(i).doubleValue(); //.doubleValue();
-            returnP.AppendPoint((Number) (d1 - d2), names[i]);
-        }
-
-
-        return returnP;
-    }
-
-    @SuppressWarnings(value = "unchecked")
-    public Points power(int dim) {
-        Points p = new Points(dimension);
-
-        for (int i = 0; i < dimension; ++i) {
-            double d = values.get(i).doubleValue();
-
-            p.AppendPoint((Number) Math.pow( d, dim*1.0), names[i]);
-        }
-
-        return p;
-    }
-
-    public double sum() {
-        double dRet = 0.0;
-        for (Object d : values) {
-            dRet += (Double) d;
-        }
-        return dRet;
     }
 }
