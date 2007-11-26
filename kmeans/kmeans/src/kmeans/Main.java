@@ -27,7 +27,7 @@ public class Main {
         KMeans kmeans = new KMeans(2);
         kmeans.LoadData(fileName, delimiter, colsToUse, columnNames);
         while(!kmeans.ready()){}
-        kmeans.RunKMeans((long) 0.50);
+        kmeans.RunKMeans((long) 1.0);
     }
 
 }

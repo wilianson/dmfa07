@@ -155,8 +155,17 @@ public class KMeans {
         int iteration = 0;
         double error_change = 0.0;
         do {
+            for (int i = 0; i < K; ++i) {
+                Cluster c = clusters.poll();
+                c.clearDataPoints();
+                try {
+                    clusters.put(c);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(KMeans.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
             // Compare the distance of each point add it to the nearest cluster
-            for (Iterator<Points> iter = dataset; iter.hasNext(); iter.next()) {
+            for (Iterator<Points> iter = dataset.iterator(); iter.hasNext(); iter.next()) {
                 //Iterate through the points
                 PriorityQueue<Double> q_distances = new PriorityQueue<Double>(K);
                 int closestClusterIndex = 0;
@@ -194,11 +203,12 @@ public class KMeans {
                 }
             }
             
-            System.out.println("Iteration: " + iteration);
+            System.out.println("Iteration: " + iteration++);
             printCentroid();
             UpdateCentroids();
             error_change = SumSquaredError() - error_change;
         } while (error_change > sigma);
+        System.out.println("Final Centroids:\n\t ");
         printCentroid();
     }
 

@@ -27,7 +27,7 @@ public class Cluster {
 
     public Cluster(Points centroid) {
         initialize();
-        setCentroid(centroid);
+        defineCentroid(centroid);
     }
 
     private void initialize(){
@@ -44,7 +44,9 @@ public class Cluster {
     public boolean addPoint(int index){
         return dataPoints.add(index);
     }
-    /**/
+    public void clearDataPoints(){
+        dataPoints.clear();
+    }
     
     /* Getter Setters *****************************/
     public Points getCentroid() {

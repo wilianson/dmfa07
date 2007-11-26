@@ -9,6 +9,7 @@
 
 package kmeans;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -62,45 +63,46 @@ public class Points<T extends Number> {
         }
         Points returnP = new Points(dimension);
 
-        for (int i = 0; i < dimension; ++i) {
-
-            double d1 = values.get(i).doubleValue();
-            double d2 = p.values.get(i).doubleValue(); //.doubleValue();
-            returnP.AppendPoint((Number) (d1 - d2), names[i]);
+        int i =0;
+        Iterator<T>thisIter = this.values.iterator();
+        Iterator<T>pIter = p.values.iterator();
+        while(thisIter.hasNext() && pIter.hasNext()){
+            Double d = thisIter.next().doubleValue() - pIter.next().doubleValue();
+            returnP.AppendPoint(d, names[i++]);
         }
-
-
         return returnP;
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(value = "unchecked")
     public Points add(Points<T> p) {
         if (dimension != p.dimension) {
             throw new NumberFormatException("Dimensions must be equal");
         }
         Points returnP = new Points(dimension);
 
-        for (int i = 0; i < dimension; ++i) {
-            double d1 = values.get(i).doubleValue();
-            double d2 = p.values.get(i).doubleValue(); //.doubleValue();
-            returnP.AppendPoint((Number) (d1 + d2), names[i]);
+        int i = 0;
+        Iterator<T> thisIter = this.values.iterator();
+        Iterator<T> pIter = p.values.iterator();
+        while (thisIter.hasNext() && pIter.hasNext()) {
+            Double d = thisIter.next().doubleValue() + pIter.next().doubleValue();
+            returnP.AppendPoint(d, names[i++]);
         }
         return returnP;
     }
 
     @SuppressWarnings(value = "unchecked")
-    public Points power(int dim) {
+    public Points power(double dim) {
         Points p = new Points(dimension);
 
-        for (int i = 0; i < dimension; ++i) {
-            double d = values.get(i).doubleValue();
-
-            p.AppendPoint((Number) Math.pow( d, dim*1.0), names[i]);
+        int i = 0;
+        Iterator<T> thisIter = this.values.iterator();
+        while (thisIter.hasNext()) {
+            Double d = thisIter.next().doubleValue();
+            p.AppendPoint(Math.pow(d, dim), names[i++]);
         }
-
         return p;
     }
-    
+
     @SuppressWarnings("unchecked")
     public Points multiply(Points<T> p) {
         if (dimension != p.dimension) {
@@ -108,10 +110,12 @@ public class Points<T extends Number> {
         }
         Points returnP = new Points(dimension);
 
-        for (int i = 0; i < dimension; ++i) {
-            double d1 = values.get(i).doubleValue();
-            double d2 = p.values.get(i).doubleValue(); //.doubleValue();
-            returnP.AppendPoint((Number) (d1 * d2), names[i]);
+        int i = 0;
+        Iterator<T> thisIter = this.values.iterator();
+        Iterator<T> pIter = p.values.iterator();
+        while (thisIter.hasNext() && pIter.hasNext()) {
+            Double d = thisIter.next().doubleValue() * pIter.next().doubleValue();
+            returnP.AppendPoint(d, names[i++]);
         }
         return returnP;
     }

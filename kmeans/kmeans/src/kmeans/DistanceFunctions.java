@@ -17,11 +17,13 @@ public class DistanceFunctions {
 
     @SuppressWarnings(value = "unchecked")
     public static double Minkowski(Points<Number> centroid, Points<Number> value) {
-
+        if ((value == null) || (centroid == null)) {
+            return Double.MAX_VALUE;
+        }
         value = centroid.subtract(value);
         value = value.power(value.getDimension());
         double d = value.sum();
 
-        return Math.pow(d, 1 / value.getDimension());
+        return Math.abs(Math.pow(d, 1.0 / value.getDimension()));
     }
 }
