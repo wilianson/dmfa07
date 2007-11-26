@@ -160,7 +160,7 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
 
     public boolean hasNext() {
         if (nextCalled || (iteratorCounter == 0)) {
-            moreObjects = (iteratorCounter < dimensions) ? true : false;
+            moreObjects = (iteratorCounter < dataset.size()) ? true : false;
             nextCalled = false;
         }
         return moreObjects;
@@ -184,7 +184,8 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
     }
     
     public Points getCurrentPoints(){
-        Points value = dataset.get(iteratorCounter);
+        
+        Points value = dataset.get(getCurrentIndex());
         return value;
     }
     
