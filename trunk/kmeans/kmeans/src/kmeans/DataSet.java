@@ -147,6 +147,17 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
         this.indexes = new int[indexes.length];
         System.arraycopy(indexes, 0, this.indexes, 0, indexes.length);
     }
+    
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("[DataSet (size: ");
+        sb.append(dataset.size());
+        sb.append("),(dim: ");
+        sb.append(dimensions);
+        sb.append(")]");
+        return sb.toString();
+    }
 
     /* Iterator Stuff ******************************************************/
     private int iteratorCounter;
@@ -180,11 +191,10 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
     }
 
     public int getCurrentIndex() {
-        return (iteratorCounter==0)?0:iteratorCounter-1;
+        return iteratorCounter;
     }
     
     public Points getCurrentPoints(){
-        
         Points value = dataset.get(getCurrentIndex());
         return value;
     }

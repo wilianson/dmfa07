@@ -63,7 +63,7 @@ public class KMeans {
     }
     
     public double SumSquaredError() {
-        double d = 0.0;
+        long d = (long)0.0;
         for (int i = 0; i < K; ++i) {
             Cluster c = clusters.poll();
             try {
@@ -73,16 +73,16 @@ public class KMeans {
                 Logger.getLogger(KMeans.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return d;
+        return Math.sqrt(d);
     }
     
     @SuppressWarnings(value = "unchecked")
-    private double SquaredError(Cluster c) {
-        double d = 0.0;
+    private double SquaredError(final Cluster c) {
+        long d = (long)0.0;
         Vector<Integer> v = c.getPoints();
         for (Integer i : v) {
             double d1 = DistanceFunctions.Minkowski(c.getCentroid(), dataset.GetPointsByIndex(i));
-            d += Math.pow(d1, 2.0);
+            d += (long)Math.pow(d1, 2.0);
         }
 
         return d;
@@ -121,21 +121,22 @@ public class KMeans {
     
     @SuppressWarnings("unchecked")
     public void UpdateCentroids() {
-        
+        // Find the mean point of all the points in the cluster
+        // Make that the centroid
         for (int j = 0; j < K; ++j) {
             Cluster c = clusters.poll();
 
             Vector<Integer> clusterPoints = c.getPoints();
             Points tot = null;
-            int sz = clusterPoints.size();
-            for (int i = 0; i < clusterPoints.size(); ++i) {
+            double sz = (double)clusterPoints.size();
+            for (int i = 0; i < sz; ++i) {
                 if (i > 0) {
                     tot = tot.add(dataset.GetPointsByIndex(i));
                 } else {
                     tot = dataset.GetPointsByIndex(i);
                 }
             }
-            if(sz != 0)
+            if(sz != 0.0)
                 tot = tot.multiply(1.0 / sz);
 
             // New centroid is the mean of its points
@@ -153,7 +154,9 @@ public class KMeans {
         ChooseCentroids(1);
         
         int iteration = 0;
-        double error_change = 0.0;
+        long error_change = (long) 0.0;
+        long last_err = (long) 0.0;
+        
         do {
             for (int i = 0; i < K; ++i) {
                 Cluster c = clusters.poll();
@@ -203,28 +206,25 @@ public class KMeans {
                 }
             }
             
-            System.out.println("Iteration: " + iteration++);
             printCentroid();
             UpdateCentroids();
-            error_change = SumSquaredError() - error_change;
+            long sse = (long) SumSquaredError();
+            error_change = Math.abs(sse - last_err);//- error_change;
+            last_err = sse;
+            System.out.println("Iteration: " + iteration++ + "Error Change: " + error_change);
         } while (error_change > sigma);
-        System.out.println("Final Centroids:\n\t ");
+        
+        System.out.println("Final Centroids:\n\t------------------------");
         printCentroid();
     }
 
     /**
      * Prints clusters to 'filename'.cluster
      * **/
-    public void printCentroid(){
-        int i = 0;
-        for(Cluster c : clusters){
-            System.out.println("Cluster["+i+"] Size: "+c.ClusterSize());
-            try{
-            System.out.println("Centroid["+i+"]: "+c.getCentroid().toString());
-            }catch(NullPointerException npe){
-                System.out.println("Centroid["+i+"]: null");
-            }
-            ++i;
+    public void printCentroid() {
+        int i = -1;
+        for (Cluster c : clusters) {
+            System.out.println("(" + (++i) + "" + c);
         }
     }
     
