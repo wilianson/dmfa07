@@ -67,7 +67,9 @@ public class Points<T extends Number> {
         Iterator<T>thisIter = this.values.iterator();
         Iterator<T>pIter = p.values.iterator();
         while(thisIter.hasNext() && pIter.hasNext()){
-            Double d = thisIter.next().doubleValue() - pIter.next().doubleValue();
+            Number d1 = thisIter.next();
+            Number d2 = pIter.next();
+            Double d = d1.doubleValue() - d2.doubleValue();
             returnP.AppendPoint(d, names[i++]);
         }
         return returnP;
@@ -84,21 +86,23 @@ public class Points<T extends Number> {
         Iterator<T> thisIter = this.values.iterator();
         Iterator<T> pIter = p.values.iterator();
         while (thisIter.hasNext() && pIter.hasNext()) {
-            Double d = thisIter.next().doubleValue() + pIter.next().doubleValue();
+            Number d1 = thisIter.next();
+            Number d2 = pIter.next();
+            Double d = d1.doubleValue() + d2.doubleValue();
             returnP.AppendPoint(d, names[i++]);
         }
         return returnP;
     }
 
     @SuppressWarnings(value = "unchecked")
-    public Points power(double dim) {
+    public Points power(double order) {
         Points p = new Points(dimension);
 
         int i = 0;
         Iterator<T> thisIter = this.values.iterator();
         while (thisIter.hasNext()) {
-            Double d = thisIter.next().doubleValue();
-            p.AppendPoint(Math.pow(d, dim), names[i++]);
+            Number d = thisIter.next();
+            p.AppendPoint(Math.pow(d.doubleValue(), order), names[i++]);
         }
         return p;
     }
@@ -114,22 +118,33 @@ public class Points<T extends Number> {
         Iterator<T> thisIter = this.values.iterator();
         Iterator<T> pIter = p.values.iterator();
         while (thisIter.hasNext() && pIter.hasNext()) {
-            Double d = thisIter.next().doubleValue() * pIter.next().doubleValue();
+            Number d1 = thisIter.next();
+            Number d2 = pIter.next();
+            Double d = d1.doubleValue() * d2.doubleValue();
             returnP.AppendPoint(d, names[i++]);
         }
         return returnP;
     }
     
     @SuppressWarnings("unchecked")
-    public Points multiply(final Double d) {
+    public Points multiply(final Double dval) {
         Points returnP = new Points(dimension);
 
-        for (int i = 0; i < dimension; ++i) {
-            double d1 = values.get(i).doubleValue();
-            double d2 = d.doubleValue(); //.doubleValue();
-            returnP.AppendPoint((Number) (d1 * d2), names[i]);
+        int i = 0;
+        Iterator<T> thisIter = this.values.iterator();
+        while (thisIter.hasNext()) {
+            Number d = thisIter.next() ;
+            returnP.AppendPoint((d.doubleValue() * dval), names[i++]);
         }
         return returnP;
+    }
+    
+    public Points abs() {
+        Points p = new Points(dimension);
+
+        p = this.power(2.0);
+        p = p.power(0.5);
+        return p;
     }
 
     public double sum() {
@@ -140,8 +155,10 @@ public class Points<T extends Number> {
         return dRet;
     }
     
+    @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();
+        sb.append('{');
         for(int i=0;i<dimension; ++i){
             sb.append('[');
             sb.append(names[i]);
@@ -149,6 +166,7 @@ public class Points<T extends Number> {
             sb.append(values.get(i));
             sb.append(']');
         }
+        sb.append('}');
         return sb.toString();
     }
     /* Getters and Setters *****************************************/

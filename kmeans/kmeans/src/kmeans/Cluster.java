@@ -9,6 +9,7 @@
 
 package kmeans;
 
+import java.lang.StringBuilder;
 import java.util.Vector;
 
 /**
@@ -64,6 +65,13 @@ public class Cluster {
     public void setPoints(Vector<Integer> points) {
         this.dataPoints = points;
     }
-    
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[ Cluster (size:" + dataPoints.size() +")");
+        sb.append(",centroid:"+this.centroid+" ]");
+        return sb.toString();
+    }
     
 }

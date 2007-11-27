@@ -18,12 +18,22 @@ public class DistanceFunctions {
     @SuppressWarnings(value = "unchecked")
     public static double Minkowski(Points<Number> centroid, Points<Number> value) {
         if ((value == null) || (centroid == null)) {
+            if(centroid == null){
+                System.err.println("DF: Centroid is " + centroid);
+                //System.err.println("DF: Value is " + value);
+            }
+            else if(value == null){
+                System.err.println("DF: Centroid is " + centroid);
+                System.err.println("DF: Value is " + value);
+            }
+                
             return Double.MAX_VALUE;
         }
         value = centroid.subtract(value);
-        value = value.power(value.getDimension());
+        value = value.abs();
+        value = value.power((double)value.getDimension());
         double d = value.sum();
 
-        return Math.abs(Math.pow(d, 1.0 / value.getDimension()));
+        return Math.pow(d, 1.0 / value.getDimension());
     }
 }
