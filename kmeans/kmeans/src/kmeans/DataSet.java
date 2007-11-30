@@ -47,6 +47,7 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
 
         setDimensions(index.length);
         setIndexes(index);
+        setHeader(colNames);
 
         FileInputStream fis = null;
         boolean successful = false;
@@ -95,15 +96,15 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
             }
             
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(DataSet.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
             successful = false;
         } catch (IOException ex) {
-            Logger.getLogger(DataSet.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         } finally {
             try {
                 fis.close();
             } catch (IOException ex) {
-                Logger.getLogger(DataSet.class.getName()).log(Level.SEVERE, null, ex);
+                ex.printStackTrace();
             }
         }
         return successful;
@@ -115,6 +116,14 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
     
     public Points GetPointsByIndex(int i){
         return dataset.get(i);
+    }
+    
+    public String[] GetHeadersUsed(){
+        String[] s = new String[indexes.length];
+        for(int i = 0; i < s.length; ++i){
+            s[i] = header[indexes[i]];
+        }
+        return s;
     }
     /** Getters and Setters **********************************************/
     public Vector<Points> getDataset() {
@@ -147,6 +156,7 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
         this.indexes = new int[indexes.length];
         System.arraycopy(indexes, 0, this.indexes, 0, indexes.length);
     }
+    
     
     @Override
     public String toString(){
