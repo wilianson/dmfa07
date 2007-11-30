@@ -9,6 +9,10 @@
 
 package kmeans;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author cgrant
@@ -19,15 +23,21 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String fileName = "C:" + System.getProperty("file.separator") + "economyrankings.txt";
-        char delimiter = '\t';
-        int[] colsToUse = {1, 8};
-        String[] columnNames = {"Economy", "Ease of Doing Business Rank", "Starting a Business", "Dealing with Licenses", "Employing Workers", "Registering Property", "Getting Credit", "Protecting Investors", "Paying Taxes", "Trading Across Borders", "Enforcing Contracts", "Closing a Business"};
+        try {
+            String fileName = "C:" + System.getProperty("file.separator") + "economyrankings.txt";
+            char delimiter = '\t';
+            int[] colsToUse = {1, 8};
+            String[] columnNames = {"Economy", "Ease of Doing Business Rank", "Starting a Business", "Dealing with Licenses", "Employing Workers", "Registering Property", "Getting Credit", "Protecting Investors", "Paying Taxes", "Trading Across Borders", "Enforcing Contracts", "Closing a Business"};
 
-        KMeans kmeans = new KMeans(3);
-        kmeans.LoadData(fileName, delimiter, colsToUse, columnNames);
-        while(!kmeans.ready()){}
-        kmeans.RunKMeans((long) 1.0);
+            KMeans kmeans = new KMeans(3);
+            kmeans.LoadData(fileName, delimiter, colsToUse, columnNames);
+            while (!kmeans.ready()) {
+            }
+            kmeans.RunKMeans((long) 1.0);
+            kmeans.WriteOutClusters();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
 }
