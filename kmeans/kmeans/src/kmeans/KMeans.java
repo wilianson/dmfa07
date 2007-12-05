@@ -22,7 +22,7 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  *
- * @author Administrator
+ * @author cgrant
  */
 public class KMeans {
 
