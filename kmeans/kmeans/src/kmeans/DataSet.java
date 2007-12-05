@@ -42,12 +42,79 @@ public class DataSet implements Iterable<Points>, Iterator<Points>{
     }
 
     @SuppressWarnings("unchecked")
-    public synchronized boolean InitializeDataSet(String fileName, char delim, int[] index, String[] colNames) {
+    public synchronized boolean InitializeDataSet(String fileName, char delim, int[] index, String[] colNames) throws FileNotFoundException, IOException{
         assert (index.length > 0);
 
         setDimensions(index.length);
         setIndexes(index);
         setHeader(colNames);
+
+        FileInputStream fis = null;
+        boolean successful = false;
+        
+        try {
+            File f = new File(fileName);
+            fis = new FileInputStream(f);
+            DataInputStream dis = new DataInputStream(fis);
+            BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+
+            while (br.ready()) {
+                Points points = new Points(dimensions);
+                String string = br.readLine();
+                if (string == null) {
+                    break;
+                }
+
+                StringTokenizer stok = new StringTokenizer(string, delim + "");
+
+                int counter = 0;
+                while (stok.hasMoreElements()) {
+                    Object o = stok.nextElement();
+                    Double d = 0.0;
+                    try {
+                        d = new Double((String) o);
+                    } catch (java.lang.NumberFormatException nfe) {
+                        ++counter;
+                        continue;
+                    }
+
+                    boolean exists = false;
+                    for (int i : indexes) {
+                        exists = (counter == i) ? true : false;
+                        if (exists) {
+                            String nam = colNames[counter];
+                            Number num = d;
+                            points.AppendPoint(d, nam);
+                            break;
+                        }
+                    }
+
+                    ++counter;
+                }
+                dataset.add(points);
+                successful = true;
+            }
+            
+        } catch (FileNotFoundException ex) {
+            successful = false;
+            throw ex;
+        } catch (IOException ex) {
+            throw ex;
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                throw ex;
+            }
+        }
+        return successful;
+    }
+    
+    public synchronized boolean InitializeDataSet2(String fileName, char delim, int[] index, String[] colNames) {
+        assert (index.length > 0);
+
+        setDimensions(index.length);
+        setIndexes(index);
 
         FileInputStream fis = null;
         boolean successful = false;

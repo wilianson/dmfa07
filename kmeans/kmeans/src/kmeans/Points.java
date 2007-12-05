@@ -21,7 +21,7 @@ public class Points<T extends Number> {
     /** Points to the current element **/
     private int pointer;
     private int dimension;
-    private Vector<T> values;
+    private Vector<Number> values;
     String[] names;
 
     Points(int dimension) {
@@ -32,7 +32,7 @@ public class Points<T extends Number> {
 
     private void initialize() {
         //values = new T[dimension];
-        values = new Vector<T>(dimension);
+        values = new Vector<Number>(dimension);
         names = new String[dimension];
         pointer = 0;
     }
@@ -64,27 +64,27 @@ public class Points<T extends Number> {
         Points returnP = new Points(dimension);
 
         int i =0;
-        Iterator<T>thisIter = this.values.iterator();
-        Iterator<T>pIter = p.values.iterator();
+        Iterator<Number>thisIter = this.values.iterator();
+        Iterator<Number>pIter = p.values.iterator();
         while(thisIter.hasNext() && pIter.hasNext()){
             Number d1 = thisIter.next();
             Number d2 = pIter.next();
-            Double d = d1.doubleValue() - d2.doubleValue();
+            Double d = new Double(d1.doubleValue() - d2.doubleValue());
             returnP.AppendPoint(d, names[i++]);
         }
         return returnP;
     }
     
     @SuppressWarnings(value = "unchecked")
-    public Points add(Points<T> p) {
+    public Points add(Points<Number> p) {
         if (dimension != p.dimension) {
             throw new NumberFormatException("Dimensions must be equal");
         }
         Points returnP = new Points(dimension);
 
         int i = 0;
-        Iterator<T> thisIter = this.values.iterator();
-        Iterator<T> pIter = p.values.iterator();
+        Iterator<Number> thisIter = this.values.iterator();
+        Iterator<Number> pIter = p.values.iterator();
         while (thisIter.hasNext() && pIter.hasNext()) {
             Number d1 = thisIter.next();
             Number d2 = pIter.next();
@@ -99,13 +99,26 @@ public class Points<T extends Number> {
         Points p = new Points(dimension);
 
         int i = 0;
-        Iterator<T> thisIter = this.values.iterator();
+        Iterator<Number> thisIter = this.values.iterator();
         while (thisIter.hasNext()) {
             Number d = thisIter.next();
-            p.AppendPoint(Math.pow(d.doubleValue(), order), names[i++]);
+            p.AppendPoint(new Double(Math.pow(d.doubleValue(), order)), names[i++]);
         }
         return p;
     }
+    
+    public Points sqrt() {
+        Points p = new Points(dimension);
+
+        int i = 0;
+        Iterator<Number> thisIter = this.values.iterator();
+        while (thisIter.hasNext()) {
+            Number d = thisIter.next();
+            p.AppendPoint(new Double(Math.sqrt(d.doubleValue())), names[i++]);
+        }
+        return p;
+    }
+    
 
     @SuppressWarnings("unchecked")
     public Points multiply(Points<T> p) {
@@ -115,8 +128,8 @@ public class Points<T extends Number> {
         Points returnP = new Points(dimension);
 
         int i = 0;
-        Iterator<T> thisIter = this.values.iterator();
-        Iterator<T> pIter = p.values.iterator();
+        Iterator<Number> thisIter = this.values.iterator();
+        Iterator<Number> pIter = p.values.iterator();
         while (thisIter.hasNext() && pIter.hasNext()) {
             Number d1 = thisIter.next();
             Number d2 = pIter.next();
@@ -131,26 +144,36 @@ public class Points<T extends Number> {
         Points returnP = new Points(dimension);
 
         int i = 0;
-        Iterator<T> thisIter = this.values.iterator();
+        Iterator<Number> thisIter = this.values.iterator();
         while (thisIter.hasNext()) {
             Number d = thisIter.next() ;
-            returnP.AppendPoint((d.doubleValue() * dval), names[i++]);
+            returnP.AppendPoint(new Double(d.doubleValue() * dval), names[i++]);
         }
         return returnP;
     }
     
     public Points abs() {
-        Points p = new Points(dimension);
+        Points returnP = new Points(dimension);
 
-        p = this.power(2.0);
-        p = p.power(0.5);
-        return p;
+        int i = 0;
+        Iterator<Number> thisIter = this.values.iterator();
+        while (thisIter.hasNext()) {
+            Number d = thisIter.next() ;
+            if(d.doubleValue() < 0){
+                returnP.AppendPoint(new Double(d.doubleValue() * -1.0), names[i++]);
+            }
+            else{
+                returnP.AppendPoint(d, names[i++]);
+            }
+            
+        }
+        return returnP;
     }
 
     public double sum() {
         double dRet = 0.0;
         for (Number d : values) {
-            dRet += (Double) d;
+            dRet += d.doubleValue();
         }
         return dRet;
     }
@@ -188,7 +211,7 @@ public class Points<T extends Number> {
         System.arraycopy(names, 0, this.names, 0, names.length);
     }
 
-    public Vector<T> getValues() {
+    public Vector<Number> getValues() {
         return values;
     }
 

@@ -11,14 +11,15 @@ package kmeans;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.PriorityQueue;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.Vector;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 /**
  *
@@ -26,11 +27,13 @@ import java.util.concurrent.BlockingQueue;
  */
 public class KMeans {
 
+    private String clusterLocation;
+
     private String fileName;
     private DataSet dataset;
     private int K;
 //    private Vector<Points>centroids;
-    private BlockingQueue<Cluster> clusters;
+    private LinkedList<Cluster> clusters;
     private boolean dataSetInitialized;
     private Vector<String> colorlist;
 
@@ -52,7 +55,7 @@ public class KMeans {
 
     private void initialize() {
 //        centroids = new Vector<Points>(K);
-        clusters = new ArrayBlockingQueue<Cluster>(K);
+        clusters = new LinkedList<Cluster>();
         fileName = new String();
         dataset = new DataSet();
         dataSetInitialized = false;
@@ -64,8 +67,16 @@ public class KMeans {
         final Thread t = new Thread(new Runnable() {
 
             public void run() {
-                dataset.InitializeDataSet(fileName, FileDelimiter, columnsToUse, columnName);
-                dataSetInitialized = true;
+                try {
+                    dataset.InitializeDataSet(fileName, FileDelimiter, columnsToUse, columnName);
+                    dataSetInitialized = true;
+                } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    System.exit(1);
+                }
             }
         });
         t.start();
@@ -78,7 +89,8 @@ public class KMeans {
             clusters.offer(c);
             d += SquaredError(c);
         }
-        return Math.sqrt(d);
+//        return Math.pow(d, 1/K);
+        return d;
     }
 
     @SuppressWarnings(value = "unchecked")
@@ -112,11 +124,15 @@ public class KMeans {
         }
 
         clusters.clear();
+        
         // Add points to clusters
+        System.out.println("$$$$$$$$$$$$$$$$$$$Initial Clusters:\n");
         for (int i : num) {
             Cluster c = new Cluster(dataset.GetPointsByIndex(i));
             clusters.offer(c);
+            System.out.println(c);
         }
+        System.out.println("$$$$$$$$$$$$$$$$$$$I\n");
     }
 
     @SuppressWarnings(value = "unchecked")
@@ -135,9 +151,10 @@ public class KMeans {
                 } else {
                     tot = dataset.GetPointsByIndex(i);
                 }
-            }
+            }            
             if (sz != 0.0) {
-                tot = tot.multiply(1.0 / sz);
+                double d = 1.0 / sz;
+                tot = tot.multiply(d);
             }
             // New centroid is the mean of its points
             c.defineCentroid(tot);
@@ -147,9 +164,12 @@ public class KMeans {
     }
 
     @SuppressWarnings(value = "unchecked")
-    public synchronized void RunKMeans(final long sigma) {
+    public synchronized void RunKMeans(final Long sigma) {
         ChooseCentroids(1);
-
+        
+        long error_avg = (long) 0.0;
+        LinkedList<Long> errors_list = new LinkedList<Long>();
+        
         int iteration = 0;
         long error_change = (long) 0.0;
         long last_err = (long) 0.0;
@@ -160,22 +180,30 @@ public class KMeans {
                 c.clearDataPoints();
                 clusters.offer(c);
             }
+            ArrayList<Double> q_distances;
             // Compare the distance of each point add it to the nearest cluster
             for (Iterator<Points> iter = dataset.iterator(); iter.hasNext(); iter.next()) {
+                // record the distances, the closest one first
+                q_distances = new ArrayList<Double>(K);
+                
                 //Iterate through the points
-                PriorityQueue<Double> q_distances = new PriorityQueue<Double>(K);
                 int closestClusterIndex = 0;
                 for (int i = 0; i < K; ++i) {
                     Cluster c = clusters.poll();
                     Double d = DistanceFunctions.Minkowski(c.getCentroid(), ((DataSet) iter).getCurrentPoints());
-                    q_distances.offer(d);
-                    // If it is in the front of the PriorityQuene it is smallest
-                    if (q_distances.peek().equals(d)) {
-                        closestClusterIndex = i;
-                    }
+                
+                        q_distances.add(d);
+                        Collections.sort(q_distances);
+                        // If it is in the front of the PriorityQuene it is smallest
+//                        if (q_distances.peek().equals(d)) {
+                        if(q_distances.get(0).equals(d)){
+                            closestClusterIndex = i;
+                        }
+                    
                     clusters.offer(c);
-                }
 
+                }
+                
                 //Cycle around to correct point
                 while (closestClusterIndex-- > 0) {
                     Cluster c = clusters.poll();
@@ -186,16 +214,35 @@ public class KMeans {
                 c.addPoint(((DataSet) iter).getCurrentIndex());
                 clusters.offer(c);
             }
-
-            printCentroid();
+            
             UpdateCentroids();
+            printCentroid();
+            
             long sse = (long) SumSquaredError();
-            error_change = Math.abs(sse - last_err); //- error_change;
-            last_err = sse;
+//            ArrayList<Long> a = new ArrayList(2);
+//            a.add(new Double(Math.sqrt(sse)).longValue());
+//            a.add(last_err);
+//            error_change = (long) new Long(Collections.max(a)) -  new Long(Collections.min(a));
+//            last_err = sse;
+            
+            errors_list.offer(sse);
+            
+            Long old_error_avg = error_avg;
+            long sum = (long)0.0;
+            for(Long l : errors_list){
+                sum  += l;
+            }
+            if(iteration!=0)
+                error_avg = (sum / (long)iteration);
+            else
+                error_avg = sum;
+            error_change = Math.abs(old_error_avg - error_avg);
+                    
+            
             System.out.println("Iteration: " + iteration++ + "Error Change: " + error_change);
         } while (error_change > sigma);
 
-        System.out.println("Final Centroids:\n\t------------------------");
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$\n\tFinal Centroids:\n$$$$$$$$$$$$$$$$$$$$$$$");
         printCentroid();
     }
 
@@ -220,11 +267,13 @@ public class KMeans {
         int clusterCount = 0;
         for (int counter = 0; counter < K; ++counter) {
             Cluster c = clusters.poll();
-            File f = new File(fileName + clusterCount++ + ".dat");
+            File f = new File(clusterLocation + clusterCount++ + ".dat");
             BufferedWriter bw = new BufferedWriter(new FileWriter(f));
             //First print the headers
             for (int i = 0; i < dataset.GetHeadersUsed().length; ++i) {
+                bw.write('\"');
                 bw.write(dataset.GetHeadersUsed()[i]);
+                bw.write('\"');
                 if ((dataset.GetHeadersUsed().length - i) > 1) {
                     //while its not the last element
                     bw.write('\t');
@@ -257,17 +306,17 @@ public class KMeans {
         //Build the script to plot the clusters
         Long time = System.currentTimeMillis();
         StringBuilder sb = new StringBuilder();
-        sb.append("%\tFile:  " + fileName + ".m\n");
+        sb.append("%\tFile:  " + clusterLocation + "KMeans"+ ".m\n");
         sb.append("%\tThis will plot all the clusters of as different colors  " + time + "\n");
         sb.append("\n");
-        sb.append("addpath(\'C:\\\');");
+        sb.append("%addpath(\'C:\\\');");
         
         for (clusterCount = 0; clusterCount < K; ++clusterCount) {
      
             sb.append("\n%\tCluster" + clusterCount + ".dat\n");
             sb.append("[labels,col1,matrix");
 
-            sb.append("] = readColData(\'" + fileName + clusterCount + ".dat\',");
+            sb.append("] = readColData(\'" + clusterLocation + clusterCount + ".dat\',");
             sb.append(K-1 + ","); // Number of cols
             sb.append(1 + ");"); // One Header row
 
@@ -305,11 +354,11 @@ public class KMeans {
         }
         
         sb.append("hold off\n");
-        sb.append("title(\'" + fileName + "\');");
+        sb.append("title(\'" + clusterLocation + "\');");
 
 
         // Write the script out
-        File f = new File(fileName + ".m");
+        File f = new File(clusterLocation+ "KMeans" + ".m");
         BufferedWriter bw = new BufferedWriter(new FileWriter(f));
         bw.write(sb.toString());
         bw.flush();
@@ -326,27 +375,32 @@ public class KMeans {
         colorlist.add("ro");
         colorlist.add("go");
         colorlist.add("bo");
-        colorlist.add("ko");
-        colorlist.add("wo");
-        colorlist.add("co");
-        colorlist.add("mo");
-        colorlist.add("yo");
-        colorlist.add("r+");
-        colorlist.add("g+");
-        colorlist.add("b+");
         colorlist.add("k+");
-        colorlist.add("w+");
-        colorlist.add("c+");
         colorlist.add("m+");
         colorlist.add("y+");
-        colorlist.add("r-");
+//        colorlist.add("wo");
+        colorlist.add("co");
+        colorlist.add("r+");
+        colorlist.add("yo");        
         colorlist.add("g-");
+        colorlist.add("ko");
+        colorlist.add("b+");
+        colorlist.add("g+");
+        colorlist.add("r-");
         colorlist.add("b-");
-        colorlist.add("k-");
-        colorlist.add("w-");
+        colorlist.add("k+");
+//        colorlist.add("w+");
+        colorlist.add("c+");
+        colorlist.add("y-");
+        colorlist.add("m+");
+        
+//        colorlist.add("w-");
         colorlist.add("c-");
         colorlist.add("m-");
-        colorlist.add("y-");
+    }
+    
+    public String GetClusterLocationPath(){
+        return clusterLocation + System.getProperty("file.separator");
     }
 
     /* Getters and Setters *********************************/
@@ -364,5 +418,12 @@ public class KMeans {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+     public String getClusterLocation() {
+        return clusterLocation;
+    }
+
+    public void setClusterLocation(String clusterLocation) {
+        this.clusterLocation = clusterLocation;
     }
 }
